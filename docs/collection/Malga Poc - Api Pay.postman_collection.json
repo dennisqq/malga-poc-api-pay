@@ -1,0 +1,430 @@
+{
+	"info": {
+		"_postman_id": "21eadd51-b1c3-4d7d-8d59-d0ee0c9c006c",
+		"name": "Malga Poc - Api Pay",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "3790887"
+	},
+	"item": [
+		{
+			"name": "mock providers",
+			"item": [
+				{
+					"name": "stripe",
+					"item": [
+						{
+							"name": "Post - Mock Criar pagamento",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amount\": 150000,\n  \"currency\": \"BRL\",\n  \"description\": \"Compra de serviços\",\n  \"paymentMethod\": {\n    \"type\": \"card\",\n    \"card\": {\n      \"number\": \"5162300060000000\",\n      \"holderName\": \"José Silva\",\n      \"cvv\": \"123\",\n      \"expirationDate\": \"12/2026\",\n      \"installments\": 6\n    }\n  }\n}\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/charges",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"charges"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Post - Mock Criar estorno",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/refund/123",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"refund",
+										"123"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get - Mock pegar transacão no provedor",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amount\": 150000,\n  \"currency\": \"BRL\",\n  \"description\": \"Compra de serviços\",\n  \"paymentMethod\": {\n    \"type\": \"card\",\n    \"card\": {\n      \"number\": \"5162300060000000\",\n      \"holderName\": \"José Silva\",\n      \"cvv\": \"123\",\n      \"expirationDate\": \"12/2026\",\n      \"installments\": 6\n    }\n  }\n}\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/charges/a86edd8c-9a88-478b-89b4-ddff0410e35c",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"charges",
+										"a86edd8c-9a88-478b-89b4-ddff0410e35c"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "braintree",
+					"item": [
+						{
+							"name": "Post - Mock Criar pagamento",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amount\": 200000,\n  \"currency\": \"BRL\",\n  \"statementDescriptor\": \"Pagamento Teste Brasil\",\n  \"paymentType\": \"card\",\n  \"card\": {\n    \"number\": \"5162300060000000\",\n    \"holder\": \"Maria Souza\",\n    \"cvv\": \"456\",\n    \"expiration\": \"12/26\",\n    \"installmentNumber\": 12\n  }\n}\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/transactions",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"transactions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Post - Mock Criar estorno",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/void/123",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"void",
+										"123"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get - Mock pegar transacão no provedor",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/transactions/a86edd8c-9a88-478b-89b4-ddff0410e35c",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"transactions",
+										"a86edd8c-9a88-478b-89b4-ddff0410e35c"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Flag",
+			"item": [
+				{
+					"name": "Post - Desativar provedor Stripe",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"stripe\",\n  \"value\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/flag/state",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"flag",
+								"state"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post - Desativar provedore Braintree",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"braintree\",\n  \"value\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/flag/state",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"flag",
+								"state"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post - Braintree - Respostas de status failed",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"braintree_response_status\",\n  \"value\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/flag/state",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"flag",
+								"state"
+							]
+						},
+						"description": "Generated from cURL: curl --location 'http://localhost:3000/flag/state' \\\n--header 'Content-Type: application/json' \\\n--data '{\n  \"key\": \"stripe_available\",\n  \"value\": false\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "post - Stripe - Respostas de status failed",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"stripe_response_status\",\n  \"value\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/flag/state",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"flag",
+								"state"
+							]
+						},
+						"description": "Generated from cURL: curl --location 'http://localhost:3000/flag/state' \\\n--header 'Content-Type: application/json' \\\n--data '{\n  \"key\": \"stripe_available\",\n  \"value\": false\n}'"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Post - Criar transação de pagamento",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": 50,\n    \"currency\": \"BRL\",\n    \"description\": \"Fluxo de compra iniciado - Stripe\",\n    \"paymentMethod\": {\n        \"type\": \"card\",\n        \"card\": {\n            \"number\": \"4111111111111111\",\n            \"holderName\": \"José Silva\",\n            \"cvv\": \"123\",\n            \"expirationDate\": \"12/2025\",\n            \"installments\": 3\n        }\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/payments",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"payments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get - Pegar transação",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/payments/6aab8acb-6670-4c1f-8dca-79634b4b156b",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"payments",
+						"6aab8acb-6670-4c1f-8dca-79634b4b156b"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post - Criar estorno",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n     \"id\": \"78282a9c-349a-46e7-a0af-b63ac8c48f0b\",\n     \"amount\": 1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/refunds",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"refunds"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
