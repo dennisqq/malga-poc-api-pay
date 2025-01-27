@@ -1,0 +1,674 @@
+openapi: 3.0.0
+info:
+  title: Malga POC - API Pay
+  description: API Pay é uma solução de pagamentos para o checkout de um e-commerce.
+    <table>
+    <thead>
+    <tr>
+    <th>Versão</th>
+    <th>Elaborado por</th>
+    <th>Data</th>
+    <th>Alterações</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+    <td>1.0.0</td>
+    <td>Dennis Quintal</td>
+    <td>25/01/2025</td>
+    <td>Versão inicial</td>
+    </tr>
+    </table>
+  version: 1.0.0
+tags:
+  - name: API Pay
+    description: API Pay é uma solução de pagamentos para o checkout de um e-commerce.
+  - name: API Pay - Mocks Provider 1 (Stripe)
+    description: API Pay com respostas mockadas para testes.
+  - name: API Pay - Mocks Provider 2 (Braintree)
+    description: API Pay com respostas mockadas para testes.
+  - name: API Pay - Flag Service
+    description: Chamada com responsabilidade de mudar valores de variaveis em memoria para testes na aplicação.
+
+paths:
+  /payments:
+    post:
+      tags:
+        - API Pay
+      summary: Realizar criação de pagamento no provedor.
+      operationId: createPayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  example: 50
+                  description: Valor do pagamento.
+                currency:
+                  type: string
+                  example: BRL
+                  description: Moeda no formato ISO 4217.
+                description:
+                  type: string
+                  example: Fluxo de compra iniciado - Stripe
+                  description: Descrição do pagamento.
+                paymentMethod:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      example: card
+                      description: Tipo de método de pagamento.
+                    card:
+                      type: object
+                      properties:
+                        number:
+                          type: string
+                          example: 4111111111111111
+                          description: Número do cartão.
+                        holderName:
+                          type: string
+                          example: José Silva
+                          description: Nome do titular do cartão.
+                        cvv:
+                          type: string
+                          example: 123
+                          description: Código de segurança do cartão.
+                        expirationDate:
+                          type: string
+                          example: 12/2025
+                          description: Data de validade no formato MM/YYYY.
+                        installments:
+                          type: integer
+                          example: 3
+                          description: Número de parcelas.
+      responses:
+        '201':
+          description: Pagamento processado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 70ac6154-8d8b-4044-ae44-3109a9fafba3
+                    description: ID da transação a ser estornada.
+                  status:
+                    type: string
+                    example: authorized
+                    description: Status da transação.
+                  provider:
+                    type: string
+                    example: stripe
+                  originalAmount:
+                    type: number
+                    example: 450
+                    description: Valor original da transação.
+                  amount:
+                    type: number
+                    example: 50
+                    description: Valor a ser estornado.
+        '400':
+          description: O payload enviado é inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error400Response'
+        '500':
+          description: Erro interno no servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error500Response'
+
+  /refunds:
+    post:
+      tags:
+        - API Pay
+      summary: Realizar estorno de pagamento.
+      operationId: postRefund
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  example: 70ac6154-8d8b-4044-ae44-3109a9fafba3
+                  description: ID da transação a ser estornada.
+                amount:
+                  type: number
+                  example: 50
+                  description: Valor a ser estornado.
+      responses:
+        '201':
+          description: Estorno realizado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 70ac6154-8d8b-4044-ae44-3109a9fafba3
+                    description: ID da transação de estorno.
+                  parentTransactionId::
+                    type: string
+                    example: 70ac6154-8d8b-4044-ae44-3109a9fafba3
+                    description: ID da transação original.
+                  status:
+                    type: string
+                    example: authorized
+                    description: Status da transação.
+                  provider:
+                    type: string
+                    example: stripe
+                  originalAmount:
+                    type: number
+                    example: 450
+                    description: Valor original da transação.
+                  amount:
+                    type: number
+                    example: 50
+                    description: Valor a ser estornado.
+        '400':
+          description: O payload enviado é inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error400Response'
+        '404':
+          description: Transação não encontrada para estorno.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error404Response'
+        '500':
+          description: Erro interno no servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error500Response'
+
+  /payments/{id}:
+    get:
+      tags:
+        - API Pay
+      summary: Obter informações de uma transação.
+      operationId: getPayment
+      parameters:
+        - in: path
+          name: id
+          description: ID da transação a ser buscada.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Informações detalhadas da transação.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 70ac6154-8d8b-4044-ae44-3109a9fafba3
+                  createdAt:
+                    type: string
+                    example: 2025-01-24T00:00:00
+                  status:
+                    type: string
+                    example: authorized
+                  amount:
+                    type: number
+                    example: 48
+                  originalAmount:
+                    type: number
+                    example: 50
+                  currency:
+                    type: string
+                    example: BRL
+                  description:
+                    type: string
+                    example: Fluxo de compra iniciado - Stripe
+                  paymentMethod:
+                    type: string
+                    example: card
+                  cardId:
+                    type: string
+                    example: 2e13c40b-89c5-45ff-9f10-941cadac2363
+                  provider:
+                    type: string
+                    example: stripe
+                  createdAtSupabase:
+                    type: string
+                    example: 2025-01-24T19:39:39.933309
+                  parentTransactionId:
+                    type: string
+                    nullable: true
+        '400':
+          description: O payload enviado é inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error400Response'
+        '404':
+          description: Transação não encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error404Response'
+        '500':
+          description: Erro interno no servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error500Response'
+
+  /charges:
+    post:
+      tags:
+        - API Pay - Mocks Provider 1 (Stripe)
+      summary: Simula a criação de pagamento com o Provedor 1 (Stripe).
+      operationId: mockCreatePaymentProvedor1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  example: 50
+                currency:
+                  type: string
+                  example: BRL
+                description:
+                  type: string
+                  example: Fluxo de compra iniciado - Stripe
+                paymentMethod:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      example: card
+                    card:
+                      type: object
+                      properties:
+                        number:
+                          type: string
+                          example: 4111111111111111
+                        holderName:
+                          type: string
+                          example: José Silva
+                        cvv:
+                          type: string
+                          example: 123
+                        expirationDate:
+                          type: string
+                          example: 12/2025
+                        installments:
+                          type: integer
+                          example: 3
+      responses:
+        '201':
+          description: Pagamento processado com sucesso pelo Provedor 1 (Stripe).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 8f52cc59-cf05-48ea-a791-062de7e338c9
+                  createdAt:
+                    type: string
+                    example: 2025-01-24
+                  status:
+                    type: string
+                    example: authorized
+                  amount:
+                    type: number
+                    example: 50
+                  originalAmount:
+                    type: number
+                    example: 50
+                  currency:
+                    type: string
+                    example: BRL
+                  description:
+                    type: string
+                    example: Fluxo de compra iniciado - Stripe
+                  paymentMethod:
+                    type: string
+                    example: card
+                  cardId:
+                    type: string
+                    example: 0cdea9c6-a47b-49da-bc08-650fc40f9d3f
+        '400':
+          description: Erro na solicitação.
+        '500':
+          description: Erro interno no servidor.
+
+  /refund/{id}:
+    post:
+      tags:
+        - API Pay - Mocks Provider 1 (Stripe)
+      summary: Simula o estorno de pagamento com o Provedor 1 (Stripe).
+      operationId: mockRefundProvedor1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  example: 1
+      responses:
+        '201':
+          description: Estorno realizado com sucesso pelo Provedor 1 (Stripe).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 70ac6154-8d8b-4044-ae44-3109a9fafba3
+                  amount:
+                    type: number
+                    example: 1
+        '400':
+          description: Erro na solicitação.
+        '404':
+          description: Transação não encontrada para estorno.
+        '500':
+          description: Erro interno no servidor.
+
+  /charges/{id}:
+    get:
+      tags:
+        - API Pay - Mocks Provider 1 (Stripe)
+      summary: Buscar pagamento do Provedor 1 (Stripe).
+      operationId: mockGetPaymentProvedor1
+      parameters:
+        - in: path
+          name: id
+          description: ID da transação.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Informações da transação.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 8f52cc59-cf05-48ea-a791-062de7e338c9
+                  createdAt:
+                    type: string
+                    example: 2025-01-24
+                  status:
+                    type: string
+                    example: authorized
+                  amount:
+                    type: number
+                    example: 50
+                  currency:
+                    type: string
+                    example: BRL
+        '404':
+          description: Transação não encontrada.
+        '500':
+          description: Erro interno no servidor.
+
+  /transactions:
+    post:
+      tags:
+        - API Pay - Mocks Provider 2 (Braintree)
+      summary: Simula a criação de pagamento com o Provedor 2 (Braintree).
+      operationId: mockCreatePaymentProvedor2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  example: 50
+                currency:
+                  type: string
+                  example: BRL
+                statementDescriptor:
+                  type: string
+                  example: Fluxo de compra iniciado - Braintree
+                paymentType:
+                  type: string
+                  example: card
+                card:
+                  type: object
+                  properties:
+                    number:
+                      type: string
+                      example: 4111111111111111
+                    holder:
+                      type: string
+                      example: José Silva
+                    cvv:
+                      type: string
+                      example: 123
+                    expiration:
+                      type: string
+                      example: 12/2025
+                    installmentNumber:
+                      type: integer
+                      example: 3
+      responses:
+        '201':
+          description: Pagamento processado com sucesso pelo Provedor 2 (Braintree).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: a2c6675e-6b23-461b-a37e-ff095d4c4831
+                  date:
+                    type: string
+                    example: 2025-01-24
+                  status:
+                    type: string
+                    example: paid
+                  amount:
+                    type: number
+                    example: 50
+                  originalAmount:
+                    type: number
+                    example: 50
+                  currency:
+                    type: string
+                    example: BRL
+                  statementDescriptor:
+                    type: string
+                    example: Fluxo de compra iniciado - Braintree
+                  paymentType:
+                    type: string
+                    example: card
+                  cardId:
+                    type: string
+                    example: 0cdea9c6-a47b-49da-bc08-650fc40f9d3f
+        '400':
+          description: Erro na solicitação.
+        '500':
+          description: Erro interno no servidor.
+
+  /void/{id}:
+    post:
+      tags:
+        - API Pay - Mocks Provider 2 (Braintree)
+      summary: Simula o estorno de pagamento com o Provedor 2 (Braintree).
+      operationId: mockRefundProvedor2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  example: 1
+      responses:
+        '201':
+          description: Estorno realizado com sucesso pelo Provedor 2 (Braintree).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 70ac6154-8d8b-4044-ae44-3109a9fafba3
+                  amount:
+                    type: number
+                    example: 1
+        '400':
+          description: Erro na solicitação.
+        '404':
+          description: Transação não encontrada para estorno.
+        '500':
+          description: Erro interno no servidor.
+
+  /transactions/{id}:
+    get:
+      tags:
+        - API Pay - Mocks Provider 2 (Braintree)
+      summary: Buscar pagamento do Provedor 2 (Braintree).
+      operationId: mockGetPaymentProvedor2
+      parameters:
+        - in: path
+          name: id
+          description: ID da transação.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Informações da transação.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: a2c6675e-6b23-461b-a37e-ff095d4c4831
+                  date:
+                    type: string
+                    example: 2025-01-24
+                  status:
+                    type: string
+                    example: paid
+                  amount:
+                    type: number
+                    example: 50
+                  currency:
+                    type: string
+                    example: BRL
+        '404':
+          description: Transação não encontrada.
+        '500':
+          description: Erro interno no servidor.
+
+  /flag/state:
+    post:
+      tags:
+        - API Pay - Flag Service
+      summary: Buscar pagamento do Provedor 2 (Braintree).
+      operationId: mockGetPaymentProvedor2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+                  enum:
+                    - stripe
+                    - braintree
+                    - stripe_response_status
+                    - braintree_response_status
+                value:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: Informações da transação.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: State of stripe is now inactive
+        '500':
+          description: Erro interno no servidor.
+
+components:
+  schemas:
+    error400Response:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Invalid Request
+        statusCode:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: O campo 'amount' é obrigatório e deve ser um número.
+
+    error404Response:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Not Found
+        statusCode:
+          type: integer
+          example: 404
+        message:
+          type: string
+          example: Transação não encontrada.
+
+    error500Response:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Internal Server Error
+        statusCode:
+          type: integer
+          example: 500
+        message:
+          type: string
+          example: Ocorreu um erro interno no servidor.
